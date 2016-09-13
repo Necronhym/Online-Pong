@@ -7,4 +7,4 @@ The game uses port 2005 so if you plan to host a game makes sure you have the po
 The client takes one argument, the server ip address, while the server takes no arguments.
 The game was built and tested on GNU/Linux Debian 8.5 Jessie
 The library required to run are OpenGl and GLFW  
-The game currently has no score, sound or graphical artwork. These might me added later.
+The game currently has no score or sound. These might me added later.
