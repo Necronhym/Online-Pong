@@ -11,63 +11,63 @@
 #include <netinet/in.h>
 #include <netdb.h>
 //A class that handles networc comunitacion:
-class network
+class CNetwork
 	{
 		//Defines buffer (ands size) that gets sent over socket
-		char buffer[ 256 ];
+		char charBuffer[ 256 ];
 		//Variables for socket info and port nubmer
-		int sockfd, portno;
+		int sockfd;
 		//Structs for server inforamtion:
 		struct sockaddr_in serv_addr;
 		struct hostent *server;
 		public:
 		//Paddle and ball position:
-		float p2y,bally, ballx;
+		float floPlayer2Y,floBallY, floBallX;
 		//Connects to a server:
-		void pongconnect( const char* serveraddress )
+		bool PongConnect( const char* charServerAddress, int intPortNumber )
 			{
-				portno = atoi( "2005" );
 				sockfd = socket( AF_INET, SOCK_STREAM, 0 );
-				server = gethostbyname( serveraddress );
+				server = gethostbyname( charServerAddress );
 				memset( (char*) &serv_addr, 0, sizeof( serv_addr ) );
 				serv_addr.sin_family = AF_INET;
 				bcopy( ( char* ) server -> h_addr, ( char* ) &serv_addr.sin_addr.s_addr, server -> h_length );
-				serv_addr.sin_port = htons( portno );
+				serv_addr.sin_port = htons( intPortNumber );
 				connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr ) );
 			}
 		//Sernds paddle y coordiante over socket:
-		void sendy( float y )
+		void Send( float floY )
 			{
-				std::stringstream tempy;
-				memset( buffer, 0, sizeof buffer );
-				tempy << y;
-				tempy >> buffer;
-				write( sockfd, buffer, strlen( buffer ));
+				std::stringstream strTemporary;
+				memset( charBuffer, 0, sizeof charBuffer );
+				strTemporary << floY;
+				strTemporary >> charBuffer;
+				write( sockfd, charBuffer, strlen( charBuffer ));
 			}
 		//Recives paddle y coordiante over socket:
-		void gety()
+		void Recive()
 			{
-				std::stringstream tempy;
-				char comma;
-				memset( buffer, 0, sizeof buffer );
-				read( sockfd, buffer, 255);
-				tempy << buffer;
-				tempy >> p2y >> comma >> ballx >> comma >> bally;
+				std::stringstream strTemporary;
+				char charComma;
+				memset( charBuffer, 0, sizeof charBuffer );
+				read( sockfd, charBuffer, 255);
+				strTemporary << charBuffer;
+				strTemporary >> floPlayer2Y >> charComma >> floBallX >> charComma >> floBallY;
 			}
 		//Closes socket:
-		void terminate()
+		void Terminate()
 			{
 				close( sockfd );
 			}
 	};
 //Handles display:
-class graphics
+class CGraphics
 	{
 		public:
-		void draw( float x1, float y1, float x2, float y2, const char* texture )
+		//Draws a rectange with given parameters, can be textured:
+		void Draw( float floX1, float floY1, float floX2, float floY2, const char* charTexture )
 			{
 				GLint tex;
-				tex = glfwLoadTexture2D ( texture, GLFW_BUILD_MIPMAPS_BIT );
+				tex = glfwLoadTexture2D ( charTexture, GLFW_BUILD_MIPMAPS_BIT );
 				glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 				glEnable( GL_BLEND );
 				glEnable( GL_TEXTURE_2D );
@@ -75,13 +75,13 @@ class graphics
 				glBegin( GL_POLYGON );
 				glColor3f( 1, 1, 1 );
 				glTexCoord2f( 0, 0 );
-				glVertex2f( x1, y1);
+				glVertex2f( floX1, floY1);
 				glTexCoord2f( 1, 0 );
-				glVertex2f( x2, y1 );
+				glVertex2f( floX2, floY1 );
 				glTexCoord2f( 1, 1 );
-				glVertex2f( x2, y2 );
+				glVertex2f( floX2, floY2 );
 				glTexCoord2f( 0, 1);
-				glVertex2f( x1, y2 );
+				glVertex2f( floX1, floY2 );
 				glDisable( GL_TEXTURE_2D );
 				glDisable( GL_BLEND );
 				glEnd();
@@ -90,72 +90,69 @@ class graphics
 
 	};
 //Handles mouse input and positon:
-class input
+class CInput
 	{
 		public:
-			float mousey, mousex;
+			float floMouseY, floMouseX;
 			//Gets the mouse position on screen:
-			void mouse( float wh, float ww )
+			void Mouse( float intWindowHeight, float intWindowWidth )
 				{
-					int tmousex, tmousey;
-					float x,y;
-					glfwGetMousePos( &tmousex, &tmousey );
-					x = ((float(tmousex)/float( wh ))*2 - 1);
-					y = -((float(tmousey)/float( ww ))*2 - 1);
-					mousey = y;
-					mousex = x;	
+					int intTemporaryMouseX, intTemporaryMouseY;
+					glfwGetMousePos( &intTemporaryMouseX, &intTemporaryMouseY );
+					floMouseX = ((float(intTemporaryMouseX)/float( intWindowHeight ))*2 - 1);
+					floMouseY = -((float(intTemporaryMouseY)/float( intWindowWidth ))*2 - 1);
 					//Hides mouse coursor:
 					glfwDisable( GLFW_MOUSE_CURSOR );
 					//Dinds mouse to screen:
-				        if( mousex >= 1 ) 
+				        if( floMouseX >= 1 ) 
                                                 {   
-                                                        tmousex = ww;
+                                                        intTemporaryMouseX = intWindowWidth;
                                                 }   
-                                        if( mousex <= -1 )
+                                        if( floMouseX <= -1 )
                                                 {
-                                                        tmousex = 0;
+                                                        intTemporaryMouseX = 0;
                                                 }
-                                        if( mousey >= 1 )
+                                        if( floMouseY >= 1 )
                                                 {
-                                                        tmousey = 0;
+                                                        intTemporaryMouseY = 0;
                                                 }
-                                        if( mousey <= -1 )
+                                        if( floMouseY <= -1 )
                                                 {
-                                                        tmousey = wh;
+                                                        intTemporaryMouseY = intWindowWidth;
                                                 }
-                                        glfwSetMousePos( tmousex, tmousey );
+                                        glfwSetMousePos( intTemporaryMouseX, intTemporaryMouseY );
 				}
 	};
 //Creates a game window:
-class window
+class CWindow
 	{
 		public:
-		void create( int width, int height )
+		void Create( int intWindowWidth, int intWindowHeight )
 			{
 				glfwInit();
 				glfwSwapBuffers();
 				glClear( GL_COLOR_BUFFER_BIT );
-				glfwOpenWindow( width, height, 0, 0, 0, 0, 0, 0, GLFW_WINDOW );
+				glfwOpenWindow( intWindowWidth, intWindowHeight, 0, 0, 0, 0, 0, 0, GLFW_WINDOW );
 				glfwSetWindowTitle( "Clinet" );
 			}
 	};
 int main( int argc, char *argv[] )
 	{
-		float p2y;
-		window window;
-		input mouse;
-		graphics display;
-		network network;
-		network.pongconnect( argv[1] );
+		CWindow Window;
+		CInput Mouse;
+		CGraphics Display;
+		CNetwork Network;
+		Network.PongConnect( argv[1], 2005 );
 		while( !glfwGetKey( GLFW_KEY_ESC ) )
 			{
-				window.create( 400, 400 );
-				mouse.mouse(400,400);
-				network.sendy( mouse.mousey );
-				network.gety();
-				display.draw( network.ballx+0.05, network.bally+0.05, network.ballx-0.05, network.bally-0.05 , "ball.tga");
-				display.draw( -1.0, mouse.mousey + 0.2, -0.9, mouse.mousey-0.2, "paddle.tga");
-				display.draw(  1.0, network.p2y + 0.2,  0.9, network.p2y-0.2, "paddle.tga");
+				Window.Create( 400, 400 );
+				Mouse.Mouse( 400, 400 );
+				Network.Send( Mouse.floMouseY );
+				Network.Recive();
+				Display.Draw(  -1.0, -1.0, 1.0, 1.0, "background.tga");
+				Display.Draw( Network.floBallX +0.05, Network.floBallY +0.05, Network.floBallX -0.05, Network.floBallY -0.05 , "ball.tga");
+				Display.Draw( -1.0, Mouse.floMouseY +0.2, -0.9, Mouse.floMouseY -0.2, "paddle.tga");
+				Display.Draw(  1.0, Network.floPlayer2Y +0.2, 0.9, Network.floPlayer2Y -0.2, "paddle.tga");
 			}
-		network.terminate();
+		Network.Terminate();
 	}
